@@ -16,18 +16,18 @@ type subscription struct {
 	c      chan Event
 }
 
-type bus struct {
+type Bus struct {
 	subscribers map[string]*subscription
 	mutex       sync.Mutex
 }
 
-func NewEventBus() *bus {
-	return &bus{
+func NewEventBus() *Bus {
+	return &Bus{
 		subscribers: make(map[string]*subscription),
 	}
 }
 
-func (e *bus) Publish(evt Event) {
+func (e *Bus) Publish(evt Event) {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 
@@ -40,7 +40,7 @@ func (e *bus) Publish(evt Event) {
 	}
 }
 
-func (e *bus) Subscribe(name string, filter subscriptionFilter) (chan Event, error) {
+func (e *Bus) Subscribe(name string, filter subscriptionFilter) (chan Event, error) {
 	_, subscriptionExists := e.subscribers[name]
 
 	if subscriptionExists {
@@ -58,7 +58,7 @@ func (e *bus) Subscribe(name string, filter subscriptionFilter) (chan Event, err
 	return e.subscribers[name].c, nil
 }
 
-func (e *bus) Unsubscribe(name string) bool {
+func (e *Bus) Unsubscribe(name string) bool {
 	sub, ok := e.subscribers[name]
 	if ok {
 		close(sub.c)
